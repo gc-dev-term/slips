@@ -1,4 +1,4 @@
-//Q1
+//Q1.........
 
 #include<stdio.h> 
 #define MAX 20 
@@ -114,4 +114,5 @@ int main()
  disp(); 
  
  return 0; 
+
 }
