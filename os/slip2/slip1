@@ -1,0 +1,89 @@
+//q1>
+public class  PrimeNumbers {
+ public static void main(String[] args) {
+ if (args.length == 0) {
+ System.out.println("Please provide numbers as command line arguments.");
+ return;
+ }
+ System.out.println("Prime numbers in the array:");
+ for (String arg : args) {
+ try {
+ int number = Integer.parseInt(arg);
+ if (isPrime(number)) {
+ System.out.println(number);
+ }
+ } catch (NumberFormatException e) {
+ System.out.println(arg + " is not a valid number.");
+ }
+ }
+ }
+ 
+ public static boolean isPrime(int number) {
+ if (number <= 1) {
+ return false; 
+ }
+ for (int i = 2; i <= Math.sqrt(number); i++) {
+ if (number % i == 0) {
+ return false; 
+ }
+ }
+ return true;
+ }
+}
+
+//q2>
+ import java.util.Scanner;
+
+ abstract class Staff {
+ protected int id;
+ protected String name;
+
+ public Staff(int id, String name) {
+ this.id = id;
+ this.name = name;
+ }
+ public abstract void displayDetails();
+ }
+
+ class OfficeStaff extends Staff {
+ private String department;
+ public OfficeStaff(int id, String name, String department) {
+ super(id, name); 
+ this.department = department;
+ }
+ @Override
+ public void displayDetails() {
+ System.out.println("ID: " + id);
+ System.out.println("Name: " + name);
+ System.out.println("Department: " + department);
+ System.out.println();
+ }
+}
+ public class StaffTest {
+ public static void main(String[] args) {
+ Scanner scanner = new Scanner(System.in);
+ System.out.print("Enter the number of Office Staff: ");
+ int n = scanner.nextInt();
+ scanner.nextLine(); 
+ OfficeStaff[] staffArray = new OfficeStaff[n];
+ 
+ for (int i = 0; i < n; i++) {
+ System.out.println("Enter details for Office Staff " + (i +1));
+ System.out.print("ID: ");
+ int id = scanner.nextInt();
+ scanner.nextLine(); 
+ System.out.print("Name: ");
+ String name = scanner.nextLine();
+ System.out.print("Department: ");
+ String department = scanner.nextLine();
+ staffArray[i] = new OfficeStaff(id, name, department);
+ }
+ 
+ System.out.println("\nDetails of Office Staff:");
+ for (OfficeStaff staff : staffArray) {
+ staff.displayDetails();
+ }
+ scanner.close();
+ }
+ }
+

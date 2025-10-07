@@ -1,0 +1,66 @@
+//q1>
+ import java.util.Scanner;
+ import java.util.Arrays;
+ public class SortCities {
+ public static void main(String[] args) {
+ Scanner scanner = new Scanner(System.in);
+  System.out.print("Enter the number of cities: ");
+ int n = scanner.nextInt();
+ scanner.nextLine();
+ String[] cities = new String[n];
+ for (int i = 0; i < n; i++) {
+ System.out.print("Enter city " + (i + 1) + ": ");
+ cities[i] = scanner.nextLine();
+ }
+ Arrays.sort(cities);
+ System.out.println("\nCities in ascending order:");
+ for (String city : cities) {
+ System.out.println(city);
+ }
+ scanner.close();
+}
+}
+//q2>
+ class Patient {
+ String patientName;
+ int patientAge;
+ double patientOxyLevel;
+ double patientHRCTReport;
+
+ public Patient(String patientName, int patientAge, double
+ patientOxyLevel, double patientHRCTReport) {
+ this.patientName = patientName;
+ this.patientAge = patientAge;
+ this.patientOxyLevel = patientOxyLevel;
+ this.patientHRCTReport = patientHRCTReport;
+ }
+ public void checkPatientStatus() throws CovidPositiveException {
+ if (patientOxyLevel < 95 && patientHRCTReport > 10) {
+ throw new CovidPositiveException("Patient is Covid Positive(+) and Need to Hospitalized");
+ } else {
+ displayPatientInfo();
+ }
+ }
+ public void displayPatientInfo() {
+ System.out.println("Patient Name: " + patientName);
+ System.out.println("Patient Age: " + patientAge);
+ System.out.println("Patient Oxygen Level: " + patientOxyLevel +"%");
+ System.out.println("Patient HRCT Report: " + patientHRCTReport);
+ }
+ }
+ class CovidPositiveException extends Exception {
+ public CovidPositiveException(String message) {
+ super(message);
+ }
+ }
+ public class Main {
+ public static void main(String[] args) {
+ Patient patient = new Patient("John Doe", 45, 93.5, 12.0);
+ try {
+ patient.checkPatientStatus();
+ } catch (CovidPositiveException e) {
+ System.out.println(e.getMessage());
+ }
+}
+}
+
