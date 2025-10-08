@@ -1,0 +1,1 @@
+Import dataset “iris.csv”. Write a Python program to create a Bar plot to get the frequency of the three species of the Iris data. Write a Python program to create a histogram of the three species of the Iris data

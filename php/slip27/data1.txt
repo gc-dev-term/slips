@@ -1,0 +1,1 @@
+select student.sid,name,class from student,competition,studcomp where student.sid=studcomp.sid and competition.cno=studcomp.cno and rank=1 and cname
