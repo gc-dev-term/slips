@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body {
+        background-color: yellow;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        font-family: Arial, sans-serif;
+      }
+
+      .form-container {
+        background: white;
+        padding: 30px 40px;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        text-align: left;
+        width: 350px;
+      }
+
+      h1 {
+        font-size: 24px;
+        color: red;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      label {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 6px;
+      }
+
+      input[type="text"],
+      input[type="date"],
+      textarea,
+      select {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+      }
+
+      input[type="radio"] {
+        margin-right: 6px;
+      }
+
+      .btn-group {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      input[type="submit"],
+      input[type="reset"] {
+        width: 48%;
+        padding: 10px;
+        font-size: 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        color: white;
+      }
+
+      input[type="submit"] {
+        background-color: red;
+      }
+
+      input[type="reset"] {
+        background-color: gray;
+      }
+
+      input[type="submit"]:hover {
+        background-color: darkred;
+      }
+
+      input[type="reset"]:hover {
+        background-color: dimgray;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="form-container">
+      <form>
+        <h1>Project Management</h1>
+
+        <label>Project Name</label>
+        <input type="text" />
+
+        <label>Assigned to</label>
+        <select name="Name_of_person" size="1">
+          <option>Gautam</option>
+          <option>Amol</option>
+          <option>Mr Gajanan</option>
+          <option>Mr Mahesh</option>
+        </select>
+
+        <label>Start Date</label>
+        <input type="date" />
+
+        <label>End Date</label>
+        <input type="date" />
+
+        <label>Priority</label>
+        <div>
+          <input type="radio" name="priority" /> High
+          <input type="radio" name="priority" /> Average
+          <input type="radio" name="priority" /> Low
+        </div>
+
+        <label>Description</label>
+        <textarea rows="5"></textarea>
+
+        <div class="btn-group">
+          <input type="submit" value="Submit" />
+          <input type="reset" value="Clear" />
+        </div>
+      </form>
+    </div>
+  </body>
+</html>
