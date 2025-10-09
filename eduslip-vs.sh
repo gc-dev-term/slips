@@ -1,48 +1,38 @@
 #!/bin/bash
-# Usage: eduslip-vs <subject> <slip-no>
-# Example: eduslip-vs java 10
+# eduslip-vs - download full slip folder (recursively)
 
-SUBJECT=$1
-SLIP=$2
-REPO_USER="gc-dev-term"
-REPO_NAME="slips"
-BRANCH="main"
-API_BASE="https://api.github.com/repos/${REPO_USER}/${REPO_NAME}/contents"
-RAW_BASE="https://raw.githubusercontent.com/${REPO_USER}/${REPO_NAME}/${BRANCH}"
+USERNAME="gc-dev-term"
+REPO="slips"
+SUBJECT="$1"
+SLIPNO="$2"
 
-if [ -z "$SUBJECT" ] || [ -z "$SLIP" ]; then
-    echo "Usage: eduslip-vs <subject> <slip-no>"
-    exit 1
+# Check if both arguments provided
+if [ -z "$SUBJECT" ] || [ -z "$SLIPNO" ]; then
+  echo "Usage: eduslip-vs <subject> <slip number>"
+  exit 1
 fi
 
-DEST="$HOME"
-START_PATH="${SUBJECT}/slip${SLIP}"
+# Build folder path
+FOLDER_PATH="$SUBJECT/slip$SLIPNO"
 
-echo "📥 Downloading all files from ${START_PATH} ..."
-mkdir -p "$DEST"
+echo "📥 Fetching all files for $SUBJECT slip$SLIPNO ..."
 
-# Recursive function
-download_folder() {
-    local FOLDER_PATH="$1"
-    local API_URL="${API_BASE}/${FOLDER_PATH}"
+# GitHub API to list all files and folders recursively
+API_URL="https://api.github.com/repos/$USERNAME/$REPO/contents/$FOLDER_PATH?ref=main"
 
-    # Get file list (JSON)
-    CONTENTS=$(curl -s "$API_URL")
+download_recursive() {
+  local url="$1"
+  local path="$2"
+  local response=$(curl -s "$url")
 
-    echo "$CONTENTS" | grep '"path":' | cut -d '"' -f 4 | while read -r PATH; do
-        TYPE=$(echo "$CONTENTS" | grep -A 5 "\"path\": \"$PATH\"" | grep '"type":' | head -n 1 | cut -d '"' -f 4)
-        if [ "$TYPE" == "file" ]; then
-            FILE_URL="${RAW_BASE}/${PATH}"
-            LOCAL_PATH="${DEST}/${PATH}"
-            mkdir -p "$(dirname "$LOCAL_PATH")"
-            echo "⬇️  Downloading $PATH"
-            curl -s -L -o "$LOCAL_PATH" "$FILE_URL"
-        elif [ "$TYPE" == "dir" ]; then
-            download_folder "$PATH"
-        fi
-    done
+  for file in $(echo "$response" | grep '"download_url":' | cut -d '"' -f 4); do
+    relpath="${file#*${FOLDER_PATH}/}"
+    mkdir -p "$path/$(dirname "$relpath")"
+    echo "⬇️  Downloading $relpath ..."
+    curl -s -L "$file" -o "$path/$relpath"
+  done
 }
 
-download_folder "$START_PATH"
+download_recursive "$API_URL" "$HOME"
 
-echo "✅ All files (including subfolders) downloaded to: $DEST"
+echo "✅ All files (including folders) downloaded to: $HOME"
