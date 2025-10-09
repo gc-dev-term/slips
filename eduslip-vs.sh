@@ -1,38 +1,39 @@
 #!/bin/bash
-# eduslip-vs <subject> <slip-no>
-# Example: eduslip-vs os 11
+# Usage: eduslip-vs <subject> <slip-no>
+# Example: eduslip-vs java 10
 
 SUBJECT=$1
 SLIP=$2
-REPO="https://api.github.com/repos/gc-dev-term/slips/contents/${SUBJECT}/slip${SLIP}"
+REPO="https://github.com/gc-dev-term/slips"
+RAW="https://raw.githubusercontent.com/gc-dev-term/slips/main"
 
-DEST="$HOME"
-
+# Check arguments
 if [ -z "$SUBJECT" ] || [ -z "$SLIP" ]; then
     echo "Usage: eduslip-vs <subject> <slip-no>"
     exit 1
 fi
 
-echo "📥 Fetching all files from ${SUBJECT}/slip${SLIP} to $DEST ..."
+# Destination
+DEST="$HOME"
+TMP="/tmp/eduslip-temp"
 
-# Get list of files in the GitHub folder via API
-FILES=$(curl -s $REPO | grep '"download_url":' | cut -d '"' -f 4)
+# Create temp folder
+rm -rf "$TMP"
+mkdir -p "$TMP"
 
-if [ -z "$FILES" ]; then
-    echo "⚠️ No files found or folder does not exist!"
-    exit 1
-fi
+echo "📥 Fetching file list from ${REPO}/tree/main/${SUBJECT}/slip${SLIP} ..."
 
-# Download each file
-for FILE_URL in $FILES; do
-    FILE_NAME=$(basename $FILE_URL)
-    echo "⬇️ Downloading $FILE_NAME ..."
-    curl -s -L -o "${DEST}/${FILE_NAME}" "$FILE_URL"
-    if [ $? -eq 0 ]; then
-        echo "✅ Downloaded: ${DEST}/${FILE_NAME}"
-    else
-        echo "⚠️ Failed: $FILE_NAME"
+# Get all file paths under slip folder using GitHub API
+API_URL="https://api.github.com/repos/gc-dev-term/slips/contents/${SUBJECT}/slip${SLIP}"
+curl -s "$API_URL" | grep '"download_url":' | cut -d '"' -f 4 > "$TMP/list.txt"
+
+echo "⬇️ Downloading all files in slip${SLIP} ..."
+while read -r FILE_URL; do
+    if [ -n "$FILE_URL" ]; then
+        FILE_NAME=$(basename "$FILE_URL")
+        echo "  ➤ $FILE_NAME"
+        curl -s -L -o "${DEST}/${FILE_NAME}" "$FILE_URL"
     fi
-done
+done < "$TMP/list.txt"
 
-echo "✨ All files saved to: $DEST"
+echo "✅ All files (including packages) downloaded to: $DEST"
