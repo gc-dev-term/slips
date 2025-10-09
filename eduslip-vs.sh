@@ -4,36 +4,45 @@
 
 SUBJECT=$1
 SLIP=$2
-REPO="https://github.com/gc-dev-term/slips"
-RAW="https://raw.githubusercontent.com/gc-dev-term/slips/main"
+REPO_USER="gc-dev-term"
+REPO_NAME="slips"
+BRANCH="main"
+API_BASE="https://api.github.com/repos/${REPO_USER}/${REPO_NAME}/contents"
+RAW_BASE="https://raw.githubusercontent.com/${REPO_USER}/${REPO_NAME}/${BRANCH}"
 
-# Check arguments
 if [ -z "$SUBJECT" ] || [ -z "$SLIP" ]; then
     echo "Usage: eduslip-vs <subject> <slip-no>"
     exit 1
 fi
 
-# Destination
 DEST="$HOME"
-TMP="/tmp/eduslip-temp"
+START_PATH="${SUBJECT}/slip${SLIP}"
 
-# Create temp folder
-rm -rf "$TMP"
-mkdir -p "$TMP"
+echo "📥 Downloading all files from ${START_PATH} ..."
+mkdir -p "$DEST"
 
-echo "📥 Fetching file list from ${REPO}/tree/main/${SUBJECT}/slip${SLIP} ..."
+# Recursive function
+download_folder() {
+    local FOLDER_PATH="$1"
+    local API_URL="${API_BASE}/${FOLDER_PATH}"
 
-# Get all file paths under slip folder using GitHub API
-API_URL="https://api.github.com/repos/gc-dev-term/slips/contents/${SUBJECT}/slip${SLIP}"
-curl -s "$API_URL" | grep '"download_url":' | cut -d '"' -f 4 > "$TMP/list.txt"
+    # Get file list (JSON)
+    CONTENTS=$(curl -s "$API_URL")
 
-echo "⬇️ Downloading all files in slip${SLIP} ..."
-while read -r FILE_URL; do
-    if [ -n "$FILE_URL" ]; then
-        FILE_NAME=$(basename "$FILE_URL")
-        echo "  ➤ $FILE_NAME"
-        curl -s -L -o "${DEST}/${FILE_NAME}" "$FILE_URL"
-    fi
-done < "$TMP/list.txt"
+    echo "$CONTENTS" | grep '"path":' | cut -d '"' -f 4 | while read -r PATH; do
+        TYPE=$(echo "$CONTENTS" | grep -A 5 "\"path\": \"$PATH\"" | grep '"type":' | head -n 1 | cut -d '"' -f 4)
+        if [ "$TYPE" == "file" ]; then
+            FILE_URL="${RAW_BASE}/${PATH}"
+            LOCAL_PATH="${DEST}/${PATH}"
+            mkdir -p "$(dirname "$LOCAL_PATH")"
+            echo "⬇️  Downloading $PATH"
+            curl -s -L -o "$LOCAL_PATH" "$FILE_URL"
+        elif [ "$TYPE" == "dir" ]; then
+            download_folder "$PATH"
+        fi
+    done
+}
 
-echo "✅ All files (including packages) downloaded to: $DEST"
+download_folder "$START_PATH"
+
+echo "✅ All files (including subfolders) downloaded to: $DEST"
