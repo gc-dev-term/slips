@@ -1,17 +1,44 @@
 #!/bin/bash
-# Installer for eduslip-vs (non-root version)
+# eduslip-vs <subject> <slip-no>
+# Example: eduslip-vs java 10
 
-INSTALL_PATH="$HOME/.local/bin"
+SUBJECT=$1
+SLIP=$2
+USER="gc-dev-term"
+REPO="slips"
+API="https://api.github.com/repos/$USER/$REPO/contents/$SUBJECT/slip$SLIP"
+RAW="https://raw.githubusercontent.com/$USER/$REPO/main"
+DEST="$HOME"
 
-mkdir -p "$INSTALL_PATH"
-curl -L -o "$INSTALL_PATH/eduslip-vs" https://raw.githubusercontent.com/gc-dev-term/slips/main/eduslip-vs.sh
-chmod +x "$INSTALL_PATH/eduslip-vs"
-
-# Add to PATH if not already there
-if [[ ":$PATH:" != *":$INSTALL_PATH:"* ]]; then
-    echo "export PATH=\$PATH:$INSTALL_PATH" >> ~/.bashrc
-    echo "✅ Added $INSTALL_PATH to PATH. Please restart terminal or run: source ~/.bashrc"
+if [ -z "$SUBJECT" ] || [ -z "$SLIP" ]; then
+    echo "Usage: eduslip-vs <subject> <slip-no>"
+    exit 1
 fi
 
-echo "✅ eduslip-vs installed successfully!"
-echo "Now you can run: eduslip-vs <subject> <slip-no>"
+echo "📥 Fetching files for $SUBJECT slip$SLIP ..."
+
+download_recursive() {
+    local folder_url="$1"
+    local path_prefix="$2"
+
+    # Get JSON list of files/folders
+    local items=$(curl -s "$folder_url" | grep '"download_url"' -A 2 | sed -n 's/."download_url": "\(.\)".*/\1/p')
+
+    if [ -z "$items" ]; then
+        echo "⚠ No direct files here, checking for subfolders..."
+        local subfolders=$(curl -s "$folder_url" | grep '"url"' | sed -n 's/."url": "\(.\)".*/\1/p' | grep -vE 'contents/$|git/')
+        for sub in $subfolders; do
+            download_recursive "$sub" "$path_prefix"
+        done
+    else
+        for url in $items; do
+            local filename=$(basename "$url")
+            echo "⬇  Downloading $filename ..."
+            curl -s -L -o "$DEST/$filename" "$url"
+        done
+    fi
+}
+
+download_recursive "$API" ""
+
+echo "✨ All done! Files saved to: $DEST"
